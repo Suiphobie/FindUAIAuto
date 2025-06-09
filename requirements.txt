@@ -1,0 +1,7 @@
+# Dependency lock for UAI Finder application
+pandas==2.3.0
+streamlit==1.45.1
+thefuzz==0.22.1
+
+# Optional dependency for improved performance (uncomment if needed)
+# python-Levenshtein==0.25.1

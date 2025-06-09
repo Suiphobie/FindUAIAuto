@@ -1,1 +1,22 @@
 test.csv
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.python-version
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Distribution / build
+build/
+dist/
+*.egg-info/
