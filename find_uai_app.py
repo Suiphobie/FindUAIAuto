@@ -126,29 +126,52 @@ def process_files(input_df, reference_df):
         st.error(f"Input CSV is missing required columns: {', '.join(missing_actual_cols)}.")
         return pd.DataFrame()
 
+    # Define patterns of names to exclude (non-educational institutions)
+    EXCLUDE_PATTERNS = [
+        "interim", "fondation", "greta", "cfa", "mission locale", "afpa",
+        "rectorat", "mairie", "cio", "université", "iut", "campus", "cesi",
+        "groupe", "association", "zupdeco", "reseau", "erip", "centre d'information"
+    ]
+    
+    non_educational_count = 0
     for _, row in input_df.iterrows():
         # Use the dynamically found column names to access data
         nom_etablissement_val = row[col_nom_actual]
         code_postal_val = row[col_cp_actual]
         adresse_val = row[col_adresse_actual]
+        
+        # Check for non-educational institutions
+        nom_lower = str(nom_etablissement_val).lower()
+        is_non_educational = any(pattern in nom_lower for pattern in EXCLUDE_PATTERNS)
+        
+        if is_non_educational:
+            non_educational_count += 1
+            uai = nom_etablissement_val  # Use the establishment name as UAI
+            uai_score = 100  # Set to 100 to indicate it's set to name
+            status = "Set to name (non-educational)"
+        else:
+            school_info = {
+                "NomEtablissement": nom_etablissement_val,
+                "CodePostal": code_postal_val,
+                "Adresse": adresse_val
+            }
+            uai, uai_score = find_most_probable_uai(school_info, reference_df)
+            status = "Processed"
 
-        school_info = {
-            "NomEtablissement": nom_etablissement_val, # Standardized key for find_most_probable_uai
-            "CodePostal": code_postal_val,           # Standardized key
-            "Adresse": adresse_val                   # Standardized key
-        }
-
-        uai, uai_score = find_most_probable_uai(school_info, reference_df) # Pass the prepared reference_df
-        academie = determine_academie(str(code_postal_val)) # Ensure code_postal is string for academie logic
+        academie = determine_academie(str(code_postal_val))
 
         results.append({
             "NomEtablissement": nom_etablissement_val,
             "CodePostal": code_postal_val,
             "Adresse": adresse_val,
-            "Identifiant_de_l_etablissement": uai, # uai already includes "Not Found" if applicable
+            "Identifiant_de_l_etablissement": uai,
             "Match_Score_UAI": uai_score,
-            "Académie": academie
+            "Académie": academie,
+            "Status": status
         })
+    
+    if non_educational_count > 0:
+        st.info(f"Marked {non_educational_count} non-educational establishments as 'Skipped'")
 
     return pd.DataFrame(results)
 

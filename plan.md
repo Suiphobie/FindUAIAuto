@@ -36,5 +36,4 @@ graph TD;
     E --> F[Determine Académie from Code_postal];
     F --> G[Add results to new DataFrame];
     G --> H[Allow download of result as CSV];
-    H --> I[Create Streamlit script];
-    I --> J[End];
+    H --> I[End];
